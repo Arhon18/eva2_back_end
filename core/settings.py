@@ -37,7 +37,7 @@ SECRET_KEY = 'django-insecure-1anvnn9ol5%5rp!xt-%pfg!1^uqdgl2dcy%40^mb49v@=b%ip*
 DEBUG = True
 
 ALLOWED_HOSTS = [
-    'u2-backend.vercel.app',
+    '.vercel.app',
     'localhost',
     '127.0.0.1'
 ]
@@ -91,11 +91,11 @@ WSGI_APPLICATION = 'core.wsgi.application'
 DATABASES = {
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
-        'NAME': db_database,
-        'USER': db_user,
-        'PASSWORD': db_password,
-        'HOST': db_host,
-        'PORT': db_port
+        'NAME': 'postgres',
+        'USER': 'postgres.wocoewmmkismpqivxijc',
+        'PASSWORD': 'Vicecq2901.',
+        'HOST': 'aws-0-us-east-1.pooler.supabase.com',
+        'PORT': '5432',
     }
 }
 
