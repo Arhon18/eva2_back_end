@@ -1,0 +1,17 @@
+{% extends "inventario/base.html" %}
+
+{% block title %}Eliminar producto | Inventario{% endblock %}
+
+{% block content %}
+  <div class="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
+    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-xl text-rose-600">!</div>
+    <h1 class="mt-4 text-2xl font-bold text-slate-900">¿Eliminar producto?</h1>
+    <p class="mt-2 text-slate-600">Eliminarás <span class="font-semibold text-slate-900">{{ producto.nombre }}</span>. Esta acción no se puede deshacer.</p>
+
+    <form method="post" class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+      {% csrf_token %}
+      <a class="rounded-lg px-4 py-2 text-center font-semibold text-slate-600 transition hover:bg-slate-100" href="{% url 'inventario:lista_productos' %}">Cancelar</a>
+      <button class="rounded-lg bg-rose-600 px-4 py-2 font-semibold text-white shadow-sm transition hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2" type="submit">Sí, eliminar</button>
+    </form>
+  </div>
+{% endblock %}
