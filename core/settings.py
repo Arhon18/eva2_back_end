@@ -82,7 +82,6 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-# Database
 if os.getenv("host") or os.getenv("DATABASE_URL"):
     if os.getenv("DATABASE_URL"):
         from urllib.parse import urlparse
