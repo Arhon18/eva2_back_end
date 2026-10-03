@@ -15,6 +15,10 @@ class Producto(models.Model):
     def __str__(self):
         return self.nombre
 
+    @property
+    def precio_formateado(self):
+        return f"${int(self.precio):,}".replace(",", ".")
+
 
 class Venta(models.Model):
     ESTADOS = (
