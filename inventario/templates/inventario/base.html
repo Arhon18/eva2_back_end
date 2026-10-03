@@ -1,35 +1,167 @@
 <!doctype html>
 <html lang="es">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{% block title %}Inventario{% endblock %}</title>
-  <script src="https://cdn.tailwindcss.com"></script>
-</head>
-<body class="min-h-screen bg-slate-100 text-slate-800">
-  <header class="border-b border-slate-200 bg-white shadow-sm">
-    <div class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-      <a class="text-xl font-bold tracking-tight text-indigo-700" href="{% url 'inventario:lista_productos' %}">
-        Control de inventario
-      </a>
-      <a class="rounded-lg bg-indigo-600 px-4 py-2 text-sm font-semibold text-white transition hover:bg-indigo-700" href="{% url 'inventario:crear_producto' %}">
-        + Nuevo producto
-      </a>
-    </div>
-  </header>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>{% block title %}Control de ventas{% endblock %}</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+      @import url("https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap");
+      :root {
+        color-scheme: dark;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: "DM Sans", sans-serif;
+        background: #080d18 !important;
+        color: #dbe4f0 !important;
+        background-image:
+          radial-gradient(
+            circle at 85% 0%,
+            rgba(16, 185, 129, 0.1),
+            transparent 28rem
+          ),
+          linear-gradient(135deg, #080d18 0%, #0d1422 55%, #101827 100%);
+      }
+      h1,
+      h2,
+      h3,
+      .brand {
+        font-family: "Space Grotesk", sans-serif;
+      }
+      header {
+        background: rgba(10, 17, 30, 0.88) !important;
+        border-color: #223047 !important;
+        box-shadow: 0 12px 35px rgba(0, 0, 0, 0.22) !important;
+        backdrop-filter: blur(14px);
+      }
+      .bg-white {
+        background-color: #111b2b !important;
+      }
+      .bg-slate-50 {
+        background-color: #162236 !important;
+      }
+      .bg-slate-100 {
+        background-color: #0b1220 !important;
+      }
+      .text-slate-900,
+      .text-slate-800 {
+        color: #f3f7fb !important;
+      }
+      .text-slate-700 {
+        color: #c3d0df !important;
+      }
+      .text-slate-600,
+      .text-slate-500 {
+        color: #91a2b8 !important;
+      }
+      .border-slate-200,
+      .border-slate-300 {
+        border-color: #2b3a51 !important;
+      }
+      .divide-slate-200 > :not([hidden]) ~ :not([hidden]),
+      .divide-slate-100 > :not([hidden]) ~ :not([hidden]) {
+        border-color: #223047 !important;
+      }
+      .hover\:bg-slate-50:hover {
+        background-color: #19283d !important;
+      }
+      .text-indigo-700,
+      .text-indigo-600 {
+        color: #5eead4 !important;
+      }
+      .bg-indigo-700 {
+        background-color: #0f766e !important;
+      }
+      .bg-indigo-600 {
+        background-color: #0d9488 !important;
+      }
+      .hover\:bg-indigo-700:hover {
+        background-color: #0f766e !important;
+      }
+      .ring-slate-200 {
+        --tw-ring-color: #26364d !important;
+      }
+      .field {
+        border-color: #33445d;
+        color: #edf5ff;
+        background: #0d1727;
+      }
+      .field::placeholder {
+        color: #6f8198;
+      }
+      .field:focus {
+        outline: 2px solid rgba(45, 212, 191, 0.35);
+        border-color: #2dd4bf;
+      }
+      .surface-glow {
+        box-shadow:
+          0 18px 50px rgba(0, 0, 0, 0.22),
+          0 0 0 1px rgba(83, 112, 143, 0.14);
+      }
+      .accent-line {
+        border-left: 3px solid #f59e0b;
+      }
+      .field {
+        width: 100%;
+        border: 1px solid #33445d;
+        border-radius: 0.5rem;
+        padding: 0.6rem 0.75rem;
+        color: #edf5ff;
+        background: #0d1727;
+      }
+      .field:focus {
+        outline: 2px solid rgba(45, 212, 191, 0.35);
+        border-color: #2dd4bf;
+      }
+    </style>
+  </head>
+  <body class="min-h-screen">
+    <header class="border-b border-slate-200 bg-white shadow-sm">
+      <div
+        class="mx-auto flex max-w-6xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8"
+      >
+        <a
+          class="brand text-xl font-bold tracking-tight text-indigo-700"
+          href="{% url 'inventario:lista_productos' %}"
+        >
+          Control de ventas
+        </a>
+        <nav class="flex items-center gap-2 text-sm font-semibold">
+          <a
+            class="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100"
+            href="{% url 'inventario:lista_productos' %}"
+            >Productos</a
+          >
+          <a
+            class="rounded-lg px-3 py-2 text-slate-600 hover:bg-slate-100"
+            href="{% url 'inventario:lista_ventas' %}"
+            >Ventas</a
+          >
+          <a
+            class="rounded-lg bg-indigo-600 px-3 py-2 text-white transition hover:bg-indigo-700"
+            href="{% url 'inventario:crear_venta' %}"
+            >Nueva venta</a
+          >
+        </nav>
+      </div>
+    </header>
 
-  <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
-    {% if messages %}
+    <main class="mx-auto max-w-6xl px-4 py-8 sm:px-6 lg:px-8">
+      {% if messages %}
       <div class="mb-6 space-y-3">
         {% for message in messages %}
-          <div class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800" role="alert">
-            {{ message }}
-          </div>
+        <div
+          class="rounded-lg border border-emerald-200 bg-emerald-50 px-4 py-3 text-sm text-emerald-800"
+          role="alert"
+        >
+          {{ message }}
+        </div>
         {% endfor %}
       </div>
-    {% endif %}
-
-    {% block content %}{% endblock %}
-  </main>
-</body>
+      {% endif %} {% block content %}{% endblock %}
+    </main>
+  </body>
 </html>
