@@ -82,35 +82,17 @@ WSGI_APPLICATION = 'core.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/6.1/ref/settings/#databases
 
-if os.getenv("host") or os.getenv("DATABASE_URL"):
-    if os.getenv("DATABASE_URL"):
-        from urllib.parse import urlparse
-        db_url = urlparse(os.environ["DATABASE_URL"])
-        name = db_url.path.lstrip("/")
-        user = db_url.username
-        password = db_url.password
-        host = db_url.hostname
-        port = db_url.port or "5432"
-    else:
-        name = os.getenv("database", "postgres")
-        user = os.getenv("user")
-        password = os.getenv("password")
-        host = os.getenv("host")
-        port = os.getenv("port", "5432")
-
-    DATABASES = {
+DATABASES = {
         "default": {
             "ENGINE": "django.db.backends.postgresql",
-            "NAME": name,
-            "USER": user,
-            "PASSWORD": password,
-            "HOST": host,
-            "PORT": port,
+            "NAME": "postgres",
+            "USER": "postgres.wocoewmmkismpqivxijc",
+            "PASSWORD": "vicecq2901",
+            "HOST": "aws-0-us-east-1.pooler.supabase.com",
+            "PORT": 5432,
             "OPTIONS": {"sslmode": "require"},
         }
-    }
-else:
-    DATABASES = {"default": {"ENGINE": "django.db.backends.sqlite3", "NAME": BASE_DIR / "db.sqlite3"}}
+}
 
 # Password validation
 # https://docs.djangoproject.com/en/6.1/ref/settings/#auth-password-validators
