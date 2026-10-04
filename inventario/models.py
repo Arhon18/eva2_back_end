@@ -19,6 +19,14 @@ class Producto(models.Model):
     def precio_formateado(self):
         return f"${int(self.precio):,}".replace(",", ".")
 
+    @property
+    def estado_stock(self):
+        if self.stock <= 0:
+            return "agotado"
+        elif self.stock <= 5:
+            return "critico"
+        return "optimo"
+
 
 class Venta(models.Model):
     ESTADOS = (
@@ -41,12 +49,20 @@ class Venta(models.Model):
         return f"Venta #{self.pk}"
 
     @property
+    def folio(self):
+        return f"VNT-{self.pk:05d}"
+
+    @property
     def total(self):
         subtotal = ExpressionWrapper(
             F("cantidad") * F("precio_unitario"),
             output_field=DecimalField(max_digits=12, decimal_places=2),
         )
         return self.detalles.aggregate(total=Sum(subtotal))["total"] or Decimal("0.00")
+
+    @property
+    def total_formateado(self):
+        return f"${int(self.total):,}".replace(",", ".")
 
 
 class DetalleVenta(models.Model):

@@ -1,17 +1,95 @@
 {% extends "inventario/base.html" %}
+{% load humanize %}
 
-{% block title %}Eliminar producto | Inventario{% endblock %}
+{% block title %}Confirmar Eliminación | Control de Ventas Pro{% endblock %}
 
 {% block content %}
-  <div class="mx-auto max-w-lg rounded-xl bg-white p-6 shadow-sm ring-1 ring-slate-200 sm:p-8">
-    <div class="flex h-12 w-12 items-center justify-center rounded-full bg-rose-100 text-xl text-rose-600">!</div>
-    <h1 class="mt-4 text-2xl font-bold text-slate-900">¿Eliminar producto?</h1>
-    <p class="mt-2 text-slate-600">Eliminarás <span class="font-semibold text-slate-900">{{ producto.nombre }}</span>. Esta acción no se puede deshacer.</p>
+<div class="mx-auto max-w-lg">
+  <div class="glass-card rounded-2xl p-6 sm:p-8 shadow-2xl border border-rose-500/30 relative overflow-hidden">
+    <div class="absolute -right-6 -top-6 h-28 w-28 rounded-full bg-rose-500/10 blur-xl"></div>
 
-    <form method="post" class="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:justify-end">
+    <!-- Danger Icon -->
+    <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-rose-500/20 text-rose-400 border border-rose-500/30">
+      <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+    </div>
+
+    {% if venta %}
+    <!-- Caso Venta -->
+    <h1 class="mt-4 text-2xl font-black text-white font-display">
+      ¿Anular / Eliminar Venta?
+    </h1>
+    <p class="mt-2 text-sm text-slate-300">
+      Estás a punto de anular la transacción comercial
+      <span class="font-mono font-bold text-indigo-400">{{ venta.folio }}</span>
+      emitida a nombre de
+      <span class="font-bold text-white">{{ venta.cliente|default:"Consumidor Final" }}</span>
+      por un valor de
+      <span class="font-mono font-bold text-emerald-400">${{ venta.total|floatformat:0|intcomma }}</span>.
+    </p>
+
+    <div class="mt-4 rounded-xl bg-emerald-500/10 border border-emerald-500/30 p-3.5 text-xs text-emerald-300 flex items-start gap-2.5">
+      <svg class="h-5 w-5 text-emerald-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+      </svg>
+      <div>
+        <span class="font-bold">Restauración de Inventario Automática:</span>
+        <p class="mt-0.5">Las unidades de los artículos pertenecientes a esta venta serán reincorporadas de inmediato al stock del catálogo.</p>
+      </div>
+    </div>
+
+    <form method="post" class="mt-6 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-4 border-t border-slate-800">
       {% csrf_token %}
-      <a class="rounded-lg px-4 py-2 text-center font-semibold text-slate-600 transition hover:bg-slate-100" href="{% url 'inventario:lista_productos' %}">Cancelar</a>
-      <button class="rounded-lg bg-rose-600 px-4 py-2 font-semibold text-white shadow-sm transition hover:bg-rose-700 focus:outline-none focus:ring-2 focus:ring-rose-500 focus:ring-offset-2" type="submit">Sí, eliminar</button>
+      <a
+        href="{% url 'inventario:lista_ventas' %}"
+        class="rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700/80 px-4 py-2.5 text-center text-sm font-semibold text-slate-300 hover:text-white transition"
+      >
+        Cancelar
+      </a>
+      <button
+        type="submit"
+        class="rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-600/30 transition transform hover:-translate-y-0.5 active:translate-y-0"
+      >
+        Sí, anular venta
+      </button>
     </form>
+
+    {% else %}
+    <!-- Caso Producto -->
+    <h1 class="mt-4 text-2xl font-black text-white font-display">
+      ¿Eliminar Producto del Catálogo?
+    </h1>
+    <p class="mt-2 text-sm text-slate-300">
+      Eliminarás permanentemente <span class="font-bold text-white">{{ producto.nombre }}</span> (Stock actual: {{ producto.stock }} unidades).
+    </p>
+
+    <div class="mt-4 rounded-xl bg-amber-500/10 border border-amber-500/30 p-3.5 text-xs text-amber-300 flex items-start gap-2.5">
+      <svg class="h-5 w-5 text-amber-400 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+      </svg>
+      <div>
+        <span class="font-bold">Advertencia de Integridad:</span>
+        <p class="mt-0.5">Si el producto ya cuenta con ventas asociadas en el historial, el sistema protegerá la integridad contable y no permitirá borrarlo.</p>
+      </div>
+    </div>
+
+    <form method="post" class="mt-6 flex flex-col-reverse sm:flex-row sm:items-center sm:justify-end gap-3 pt-4 border-t border-slate-800">
+      {% csrf_token %}
+      <a
+        href="{% url 'inventario:lista_productos' %}"
+        class="rounded-xl border border-slate-700 bg-slate-800/80 hover:bg-slate-700/80 px-4 py-2.5 text-center text-sm font-semibold text-slate-300 hover:text-white transition"
+      >
+        Cancelar
+      </a>
+      <button
+        type="submit"
+        class="rounded-xl bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 px-5 py-2.5 text-sm font-bold text-white shadow-lg shadow-rose-600/30 transition transform hover:-translate-y-0.5 active:translate-y-0"
+      >
+        Sí, eliminar producto
+      </button>
+    </form>
+    {% endif %}
   </div>
+</div>
 {% endblock %}

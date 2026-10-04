@@ -1,97 +1,248 @@
-{% extends "inventario/base.html" %} {% block title %}Reporte de ventas |
-Control de ventas{% endblock %} {% block content %}
-<div
-  class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
->
-  <div>
+{% extends "inventario/base.html" %}
+{% load humanize inventario_tags %}
+
+{% block title %}Reporte de Ventas | Control de Ventas Pro{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+  <!-- Top Header -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <a
+        href="{% url 'inventario:lista_ventas' %}"
+        class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition mb-1"
+      >
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>Volver a ventas</span>
+      </a>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-white font-display">
+        Reporte Comercial y Financiero
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-400">
+        Analiza el rendimiento comercial, ticket promedio y exporta registros contables.
+      </p>
+    </div>
+
+    <!-- Export to CSV Button -->
     <a
-      class="text-sm font-semibold text-indigo-600"
-      href="{% url 'inventario:lista_ventas' %}"
-      >← Volver a ventas</a
+      href="?desde={{ desde }}&hasta={{ hasta }}&estado={{ estado_filtro }}&formato=csv"
+      class="flex items-center gap-2 rounded-xl bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-emerald-500/20 transition transform hover:-translate-y-0.5"
     >
-    <h1 class="mt-2 text-3xl font-bold text-slate-900">Reporte de ventas</h1>
+      <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+        <path stroke-linecap="round" stroke-linejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+      </svg>
+      <span>Descargar CSV Excel</span>
+    </a>
   </div>
-  <a
-    class="rounded-lg bg-emerald-600 px-4 py-2 font-semibold text-white"
-    href="?desde={{ desde }}&hasta={{ hasta }}&formato=csv"
-    >Descargar CSV</a
-  >
-</div>
-<form
-  class="mb-6 grid gap-3 rounded-xl bg-white p-5 shadow-sm ring-1 ring-slate-200 sm:grid-cols-[1fr_1fr_auto] sm:items-end"
-  method="get"
->
-  <label class="text-sm font-semibold"
-    >Desde<input
-      class="field mt-1"
-      type="date"
-      name="desde"
-      value="{{ desde }}" /></label
-  ><label class="text-sm font-semibold"
-    >Hasta<input
-      class="field mt-1"
-      type="date"
-      name="hasta"
-      value="{{ hasta }}" /></label
-  ><button
-    class="rounded-lg bg-slate-800 px-4 py-2 font-semibold text-white"
-    type="submit"
-  >
-    Filtrar
-  </button>
-</form>
-<div class="mb-5 rounded-xl bg-indigo-700 p-6 text-white">
-  <p class="text-sm uppercase tracking-wider text-indigo-200">
-    Total del periodo
-  </p>
-  <p class="mt-1 text-3xl font-bold">${{ total|floatformat:2 }}</p>
-</div>
-<div
-  class="surface-glow overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200"
->
-  <table class="min-w-full divide-y divide-slate-200">
-    <thead class="bg-slate-50">
-      <tr>
-        <th class="px-6 py-3 text-left text-xs uppercase text-slate-500">
-          Venta
-        </th>
-        <th class="px-6 py-3 text-left text-xs uppercase text-slate-500">
-          Fecha
-        </th>
-        <th class="px-6 py-3 text-left text-xs uppercase text-slate-500">
-          Cliente
-        </th>
-        <th class="px-6 py-3 text-right text-xs uppercase text-slate-500">
-          Total
-        </th>
-      </tr>
-    </thead>
-    <tbody class="divide-y divide-slate-100">
-      {% for venta in ventas %}
-      <tr>
-        <td class="px-6 py-4">
-          <a
-            class="text-indigo-600"
-            href="{% url 'inventario:detalle_venta' venta.pk %}"
-            >#{{ venta.pk }}</a
-          >
-        </td>
-        <td class="px-6 py-4">{{ venta.fecha|date:"d/m/Y H:i" }}</td>
-        <td class="px-6 py-4">
-          {{ venta.cliente|default:"Consumidor final" }}
-        </td>
-        <td class="px-6 py-4 text-right font-semibold">
-          ${{ venta.total|floatformat:2 }}
-        </td>
-      </tr>
-      {% empty %}
-      <tr>
-        <td class="px-6 py-10 text-center text-slate-500" colspan="4">
-          No hay ventas en el periodo.
-        </td>
-      </tr>
-      {% endfor %}
-    </tbody>
-  </table>
+
+  <!-- Filter Card with Range Presets -->
+  <div class="glass-card rounded-2xl p-6 space-y-4">
+    <!-- Presets bar -->
+    <div class="flex flex-wrap items-center gap-2 pb-3 border-b border-slate-800">
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-400 mr-2">Rangos Rápidos:</span>
+      <a
+        href="?periodo=hoy"
+        class="rounded-lg px-3 py-1 text-xs font-semibold transition {% if periodo == 'hoy' %}bg-indigo-600 text-white{% else %}bg-slate-800 text-slate-300 hover:bg-slate-700{% endif %}"
+      >
+        Hoy
+      </a>
+      <a
+        href="?periodo=7dias"
+        class="rounded-lg px-3 py-1 text-xs font-semibold transition {% if periodo == '7dias' %}bg-indigo-600 text-white{% else %}bg-slate-800 text-slate-300 hover:bg-slate-700{% endif %}"
+      >
+        Últimos 7 días
+      </a>
+      <a
+        href="?periodo=mes"
+        class="rounded-lg px-3 py-1 text-xs font-semibold transition {% if periodo == 'mes' %}bg-indigo-600 text-white{% else %}bg-slate-800 text-slate-300 hover:bg-slate-700{% endif %}"
+      >
+        Este Mes
+      </a>
+      <a
+        href="?periodo=mes_pasado"
+        class="rounded-lg px-3 py-1 text-xs font-semibold transition {% if periodo == 'mes_pasado' %}bg-indigo-600 text-white{% else %}bg-slate-800 text-slate-300 hover:bg-slate-700{% endif %}"
+      >
+        Mes Anterior
+      </a>
+      <a
+        href="?periodo=anio"
+        class="rounded-lg px-3 py-1 text-xs font-semibold transition {% if periodo == 'anio' %}bg-indigo-600 text-white{% else %}bg-slate-800 text-slate-300 hover:bg-slate-700{% endif %}"
+      >
+        Este Año
+      </a>
+    </div>
+
+    <!-- Date inputs form -->
+    <form method="get" class="grid grid-cols-1 sm:grid-cols-4 gap-4 items-end">
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+          Fecha Desde
+        </label>
+        <input
+          type="date"
+          name="desde"
+          value="{{ desde }}"
+          class="form-input"
+        />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+          Fecha Hasta
+        </label>
+        <input
+          type="date"
+          name="hasta"
+          value="{{ hasta }}"
+          class="form-input"
+        />
+      </div>
+
+      <div>
+        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">
+          Estado
+        </label>
+        <select name="estado" class="form-input">
+          <option value="">Todos los estados</option>
+          <option value="pagada" {% if estado_filtro == 'pagada' %}selected{% endif %}>Solo Pagadas</option>
+          <option value="pendiente" {% if estado_filtro == 'pendiente' %}selected{% endif %}>Solo Pendientes</option>
+          <option value="anulada" {% if estado_filtro == 'anulada' %}selected{% endif %}>Solo Anuladas</option>
+        </select>
+      </div>
+
+      <div>
+        <button
+          type="submit"
+          class="w-full rounded-xl bg-slate-800 hover:bg-slate-700 py-2.5 px-4 text-sm font-semibold text-white transition flex items-center justify-center gap-2"
+        >
+          <svg class="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z" />
+          </svg>
+          <span>Filtrar Reporte</span>
+        </button>
+      </div>
+    </form>
+  </div>
+
+  <!-- 4 Executive KPI Cards for the filtered period -->
+  <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div class="glass-card rounded-2xl p-6 relative overflow-hidden">
+      <div class="absolute -right-4 -bottom-4 h-20 w-20 rounded-full bg-emerald-500/10 blur-xl"></div>
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Total Periodo</span>
+      <h3 class="mt-2 text-2xl sm:text-3xl font-black font-display text-emerald-400 font-mono">
+        {{ total|clp }}
+      </h3>
+      <p class="mt-1 text-xs text-slate-400">Monto total facturado</p>
+    </div>
+
+    <div class="glass-card rounded-2xl p-6 relative overflow-hidden">
+      <div class="absolute -right-4 -bottom-4 h-20 w-20 rounded-full bg-indigo-500/10 blur-xl"></div>
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Transacciones</span>
+      <h3 class="mt-2 text-2xl sm:text-3xl font-black font-display text-indigo-400">
+        {{ total_transacciones }}
+      </h3>
+      <div class="mt-1 flex items-center gap-2 text-xs text-slate-400">
+        <span class="text-emerald-400">{{ ventas_pagadas }} pagadas</span>
+        <span>·</span>
+        <span class="text-amber-400">{{ ventas_pendientes }} pend.</span>
+      </div>
+    </div>
+
+    <div class="glass-card rounded-2xl p-6 relative overflow-hidden">
+      <div class="absolute -right-4 -bottom-4 h-20 w-20 rounded-full bg-cyan-500/10 blur-xl"></div>
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Ticket Promedio</span>
+      <h3 class="mt-2 text-2xl sm:text-3xl font-black font-display text-cyan-400 font-mono">
+        {{ ticket_promedio|clp }}
+      </h3>
+      <p class="mt-1 text-xs text-slate-400">Monto promedio por venta</p>
+    </div>
+
+    <div class="glass-card rounded-2xl p-6 relative overflow-hidden">
+      <div class="absolute -right-4 -bottom-4 h-20 w-20 rounded-full bg-violet-500/10 blur-xl"></div>
+      <span class="text-xs font-bold uppercase tracking-wider text-slate-400">Unidades Vendidas</span>
+      <h3 class="mt-2 text-2xl sm:text-3xl font-black font-display text-violet-400 font-mono">
+        {{ total_articulos }} <span class="text-xs font-normal text-slate-400">uds</span>
+      </h3>
+      <p class="mt-1 text-xs text-slate-400">Artículos movilizados</p>
+    </div>
+  </div>
+
+  <!-- Detailed Sales Breakdown Table -->
+  <div class="glass-card rounded-2xl overflow-hidden shadow-xl">
+    <div class="p-6 border-b border-slate-800 flex items-center justify-between">
+      <div>
+        <h2 class="text-lg font-bold text-white font-display">Detalle de Ventas del Periodo</h2>
+        <p class="text-xs text-slate-400">Registros comprendidos entre {{ desde }} y {{ hasta }}</p>
+      </div>
+      <span class="text-xs font-mono font-bold text-slate-400 bg-slate-800 px-3 py-1 rounded-lg">
+        {{ ventas|length }} ventas
+      </span>
+    </div>
+
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-800 text-left text-sm">
+        <thead class="bg-slate-900/70 text-xs uppercase tracking-wider text-slate-400">
+          <tr>
+            <th class="px-6 py-4 font-bold">Folio</th>
+            <th class="px-6 py-4 font-bold">Fecha</th>
+            <th class="px-6 py-4 font-bold">Cliente</th>
+            <th class="px-6 py-4 font-bold">Estado</th>
+            <th class="px-6 py-4 text-center font-bold">Artículos</th>
+            <th class="px-6 py-4 text-right font-bold">Total Venta</th>
+            <th class="px-6 py-4 text-right font-bold">Comprobante</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60">
+          {% for venta in ventas %}
+          <tr class="hover:bg-slate-800/40 transition">
+            <td class="px-6 py-4 whitespace-nowrap font-mono font-bold text-indigo-400">
+              {{ venta.folio }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap text-slate-300">
+              {{ venta.fecha|date:"d/m/Y H:i" }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap font-medium text-slate-200">
+              {{ venta.cliente|default:"Consumidor Final" }}
+            </td>
+            <td class="px-6 py-4 whitespace-nowrap">
+              {% if venta.estado == "pagada" %}
+              <span class="badge badge-pagada">Pagada</span>
+              {% elif venta.estado == "pendiente" %}
+              <span class="badge badge-pendiente">Pendiente</span>
+              {% else %}
+              <span class="badge badge-anulada">Anulada</span>
+              {% endif %}
+            </td>
+            <td class="px-6 py-4 text-center whitespace-nowrap font-mono text-slate-300">
+              {{ venta.detalles.all|length }}
+            </td>
+            <td class="px-6 py-4 text-right whitespace-nowrap font-mono font-bold text-white">
+              {{ venta.total|clp }}
+            </td>
+            <td class="px-6 py-4 text-right whitespace-nowrap">
+              <a
+                href="{% url 'inventario:detalle_venta' venta.pk %}"
+                class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 text-xs font-semibold text-slate-200 transition inline-flex items-center gap-1"
+              >
+                <span>Ver</span>
+                <svg class="h-3 w-3" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7" />
+                </svg>
+              </a>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="7" class="px-6 py-12 text-center text-slate-500">
+              No hay ventas registradas en el periodo seleccionado.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  </div>
 </div>
 {% endblock %}

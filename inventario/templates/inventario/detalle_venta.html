@@ -1,63 +1,211 @@
-{% extends "inventario/base.html" %} {% load humanize %} {% block title %}Venta #{{ venta.pk }} |
-Control de ventas{% endblock %} {% block content %}
-<div
-  class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between"
->
-  <div>
-    <a
-      class="text-sm font-semibold text-indigo-600"
-      href="{% url 'inventario:lista_ventas' %}"
-      >← Volver a ventas</a
-    >
-    <h1 class="mt-2 text-3xl font-bold text-slate-900">
-      Venta #{{ venta.pk }}
-    </h1>
-    <p class="mt-2 text-slate-600">
-      {{ venta.fecha|date:"d/m/Y H:i" }} · {{ venta.cliente|default:"Consumidor final" }}
-    </p>
+{% extends "inventario/base.html" %}
+{% load humanize inventario_tags %}
+
+{% block title %}{{ venta.folio }} | Control de Ventas Pro{% endblock %}
+
+{% block content %}
+<div class="mx-auto max-w-4xl space-y-6">
+  <!-- Top Navigation & Action Bar (Hidden on print) -->
+  <div class="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 no-print">
+    <div>
+      <a
+        href="{% url 'inventario:lista_ventas' %}"
+        class="inline-flex items-center gap-1.5 text-xs font-semibold text-indigo-400 hover:text-indigo-300 transition mb-1"
+      >
+        <svg class="h-3.5 w-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
+        </svg>
+        <span>Volver a listado de ventas</span>
+      </a>
+      <h1 class="text-2xl sm:text-3xl font-extrabold text-white font-display">
+        Comprobante de Venta
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-400">
+        Detalle fiscal y comercial emitido para la transacción.
+      </p>
+    </div>
+
+    <!-- Actions (Print, Edit, Delete) -->
+    <div class="flex items-center gap-2.5">
+      <button
+        type="button"
+        onclick="window.print()"
+        class="flex items-center gap-2 rounded-xl bg-slate-800 hover:bg-slate-700 px-4 py-2 text-sm font-semibold text-white shadow-sm transition border border-slate-700"
+      >
+        <svg class="h-4 w-4 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+        </svg>
+        <span>Imprimir / PDF</span>
+      </button>
+
+      <a
+        href="{% url 'inventario:editar_venta' venta.pk %}"
+        class="flex items-center gap-2 rounded-xl bg-indigo-600/20 text-indigo-300 hover:bg-indigo-600/30 px-3.5 py-2 text-sm font-semibold border border-indigo-500/30 transition"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+        </svg>
+        <span>Editar</span>
+      </a>
+
+      <a
+        href="{% url 'inventario:eliminar_venta' venta.pk %}"
+        class="flex items-center gap-2 rounded-xl bg-rose-500/15 text-rose-300 hover:bg-rose-500/25 px-3.5 py-2 text-sm font-semibold border border-rose-500/30 transition"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+        </svg>
+        <span>Anular</span>
+      </a>
+    </div>
   </div>
-  <div class="flex gap-2">
-    <a
-      class="rounded-lg border border-slate-300 bg-white px-4 py-2 font-semibold"
-      href="{% url 'inventario:editar_venta' venta.pk %}"
-      >Editar</a
-    ><a
-      class="rounded-lg bg-rose-600 px-4 py-2 font-semibold text-white"
-      href="{% url 'inventario:eliminar_venta' venta.pk %}"
-      >Eliminar</a
-    >
+
+  <!-- Printable Voucher Card -->
+  <div class="glass-card rounded-2xl p-6 sm:p-10 shadow-2xl border border-slate-800 print-invoice-area">
+    <!-- Invoice Header -->
+    <div class="flex flex-col sm:flex-row sm:items-start sm:justify-between pb-8 border-b border-slate-800 gap-6">
+      <div>
+        <div class="flex items-center gap-3">
+          <div class="h-10 w-10 rounded-xl bg-gradient-to-tr from-indigo-600 to-emerald-400 p-0.5 shadow-md">
+            <div class="h-full w-full bg-[#0c1220] rounded-[10px] flex items-center justify-center">
+              <svg class="h-5 w-5 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6" />
+              </svg>
+            </div>
+          </div>
+          <div>
+            <h2 class="text-xl font-black text-white font-display">Control de Ventas Pro</h2>
+            <p class="text-xs text-slate-400">Sistema Comercial de Ventas & Inventario</p>
+          </div>
+        </div>
+
+        <div class="mt-4 text-xs text-slate-400 space-y-1">
+          <p><span class="text-slate-500 font-semibold">Giro:</span> Venta y Distribución de Artículos Tecnológicos</p>
+          <p><span class="text-slate-500 font-semibold">Ubicación:</span> Santiago, Chile</p>
+          <p><span class="text-slate-500 font-semibold">Emisión:</span> Sistema Informático Centralizado</p>
+        </div>
+      </div>
+
+      <div class="sm:text-right">
+        <span class="inline-block px-3 py-1 rounded-lg bg-indigo-500/10 border border-indigo-500/30 text-indigo-400 text-xs font-bold uppercase tracking-wider">
+          Comprobante Electrónico
+        </span>
+        <div class="mt-2 text-2xl sm:text-3xl font-black font-mono text-white">
+          {{ venta.folio }}
+        </div>
+        <p class="mt-1 text-xs text-slate-400">
+          Fecha: <span class="font-medium text-slate-200">{{ venta.fecha|date:"d/m/Y H:i" }}</span>
+        </p>
+        <div class="mt-3">
+          {% if venta.estado == "pagada" %}
+          <span class="badge badge-pagada">
+            <span class="h-2 w-2 rounded-full bg-emerald-400"></span>
+            Venta Pagada
+          </span>
+          {% elif venta.estado == "pendiente" %}
+          <span class="badge badge-pendiente">
+            <span class="h-2 w-2 rounded-full bg-amber-400"></span>
+            Pago Pendiente
+          </span>
+          {% else %}
+          <span class="badge badge-anulada">
+            <span class="h-2 w-2 rounded-full bg-rose-400"></span>
+            Venta Anulada
+          </span>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+
+    <!-- Client and Note Meta Info -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 gap-6 py-6 border-b border-slate-800 text-sm">
+      <div>
+        <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+          Cliente / Receptor
+        </span>
+        <p class="text-base font-extrabold text-white">
+          {{ venta.cliente|default:"Consumidor Final" }}
+        </p>
+        <p class="text-xs text-slate-400 mt-1">Transacción comercial estándar</p>
+      </div>
+
+      <div>
+        <span class="block text-xs font-bold uppercase tracking-wider text-slate-400 mb-1">
+          Observaciones / Modo de Pago
+        </span>
+        <p class="text-sm text-slate-300">
+          {{ venta.observaciones|default:"Sin observaciones registradas." }}
+        </p>
+      </div>
+    </div>
+
+    <!-- Items Table -->
+    <div class="mt-6 overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-800 text-left text-sm">
+        <thead class="bg-slate-900/60 text-xs uppercase tracking-wider text-slate-400">
+          <tr>
+            <th class="py-3 px-4 font-bold">#</th>
+            <th class="py-3 px-4 font-bold">Descripción del Producto</th>
+            <th class="py-3 px-4 text-center font-bold">Cantidad</th>
+            <th class="py-3 px-4 text-right font-bold">Precio Unitario</th>
+            <th class="py-3 px-4 text-right font-bold">Subtotal</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60">
+          {% for detalle in venta.detalles.all %}
+          <tr class="hover:bg-slate-800/30 transition">
+            <td class="py-3.5 px-4 font-mono text-xs text-slate-500">{{ forloop.counter }}</td>
+            <td class="py-3.5 px-4">
+              <span class="font-bold text-slate-200">{{ detalle.producto.nombre }}</span>
+              {% if detalle.producto.descripcion %}
+              <p class="text-xs text-slate-400 mt-0.5 line-clamp-1">{{ detalle.producto.descripcion }}</p>
+              {% endif %}
+            </td>
+            <td class="py-3.5 px-4 text-center font-mono font-semibold text-slate-300">
+              {{ detalle.cantidad }}
+            </td>
+            <td class="py-3.5 px-4 text-right font-mono text-slate-300">
+              {{ detalle.precio_unitario|clp }}
+            </td>
+            <td class="py-3.5 px-4 text-right font-mono font-bold text-white">
+              {{ detalle.subtotal|clp }}
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="py-8 text-center text-sm text-slate-500">
+              No hay productos registrados en esta venta.
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Financial Total Breakdown -->
+    <div class="mt-8 pt-6 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center sm:justify-between gap-6">
+      <div class="text-xs text-slate-500 space-y-1">
+        <p>✓ El stock de los productos ha sido descontado automáticamente del catálogo.</p>
+        <p>✓ En caso de anulación, el inventario será reincorporado al sistema.</p>
+      </div>
+
+      <div class="w-full sm:w-72 space-y-2.5 text-sm">
+        <div class="flex items-center justify-between text-slate-400">
+          <span>Subtotal Neto:</span>
+          <span class="font-mono text-slate-200">{{ neto|clp }}</span>
+        </div>
+        <div class="flex items-center justify-between text-slate-400">
+          <span>IVA (19%):</span>
+          <span class="font-mono text-slate-200">{{ iva|clp }}</span>
+        </div>
+        <div class="flex items-center justify-between pt-3 border-t border-slate-800">
+          <span class="text-base font-extrabold text-white">Total Pagado:</span>
+          <span class="text-2xl font-black font-display text-emerald-400 font-mono">
+            {{ venta.total|clp }}
+          </span>
+        </div>
+      </div>
+    </div>
   </div>
-</div>
-<div class="surface-glow overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
-  <table class="min-w-full divide-y divide-slate-200">
-    <thead class="bg-slate-50">
-        <tr>
-            <th class="px-6 py-3 text-left text-xs uppercase text-slate-500">Producto</th>
-            <th class="px-6 py-3 text-right text-xs uppercase text-slate-500">Cantidad</th>
-            <th class="px-6 py-3 text-right text-xs uppercase text-slate-500">Precio</th>
-            <th class="px-6 py-3 text-right text-xs uppercase text-slate-500">Total</th>
-        </tr>
-    </thead>
-    <tbody class="divide-y divide-slate-200 bg-white">
-        {% for detalle in venta.detalles.all %}
-        <tr>
-            <td class="px-6 py-4 font-semibold text-slate-900">{{ detalle.producto.nombre }}</td>
-            <td class="px-6 py-4 text-right">{{ detalle.cantidad }}</td>
-            <td class="px-6 py-4 text-right">${{ detalle.precio_unitario|floatformat:0|intcomma }}</td>
-            <td class="px-6 py-4 text-right font-semibold">${{ detalle.subtotal|floatformat:0|intcomma }}</td>
-        </tr>
-        {% empty %}
-        <tr>
-            <td colspan="4" class="px-6 py-4 text-center text-slate-500">No hay productos registrados en esta venta.</td>
-        </tr>
-        {% endfor %}
-    </tbody>
-    <tfoot class="bg-slate-50">
-        <tr>
-            <td colspan="3" class="px-6 py-4 text-right font-bold text-slate-700">Total</td>
-            <td class="px-6 py-4 text-right text-lg font-bold text-indigo-700">${{ venta.total|floatformat:0|intcomma }}</td>
-        </tr>
-    </tfoot>
-</table>
 </div>
 {% endblock %}

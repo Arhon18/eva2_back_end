@@ -1,107 +1,268 @@
-{% extends 'inventario/base.html' %}
+{% extends "inventario/base.html" %}
+{% load humanize inventario_tags %}
 
-{% block title %}Productos | Inventario{% endblock %}
+{% block title %}Inventario & Stock | Control de Ventas Pro{% endblock %}
 
 {% block content %}
-<div class="mb-6 flex flex-col gap-3 sm:flex-row sm:items-end sm:justify-between">
-  <div>
-    <p class="text-sm font-semibold uppercase tracking-wider text-indigo-600">
-      Catálogo / stock
-    </p>
-    <h1 class="mt-1 text-3xl font-bold tracking-tight text-slate-900">
-      Productos
-    </h1>
-    <p class="mt-2 text-slate-600">
-      Administra el stock y la información de tu inventario.
-    </p>
-  </div>
-  <a
-    class="inline-flex justify-center rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white shadow-sm transition hover:bg-indigo-700"
-    href="{% url 'inventario:crear_producto' %}"
-  >
-    Agregar producto
-  </a>
-</div>
+<div class="space-y-6">
+  <!-- Top Header -->
+  <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+    <div>
+      <div class="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-indigo-400">
+        <span class="inline-block h-2 w-2 rounded-full bg-indigo-500"></span>
+        Almacén y Bodega
+      </div>
+      <h1 class="mt-1 text-2xl sm:text-3xl font-extrabold text-white font-display">
+        Catálogo de Productos & Stock
+      </h1>
+      <p class="text-xs sm:text-sm text-slate-400">
+        Gestiona tus artículos, controla existencias y actualiza precios en tiempo real.
+      </p>
+    </div>
 
-<div class="surface-glow overflow-hidden rounded-xl bg-white shadow-sm ring-1 ring-slate-200">
-  {% if productos %}
-  <div class="overflow-x-auto">
-    <table class="min-w-full divide-y divide-slate-200">
-      <thead class="bg-slate-50">
-        <tr>
-          <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Producto
-          </th>
-          <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Precio
-          </th>
-          <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Stock
-          </th>
-          <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Estado
-          </th>
-          <th class="px-6 py-3 text-right text-xs font-semibold uppercase tracking-wider text-slate-500">
-            Acciones
-          </th>
-        </tr>
-      </thead>
-      <tbody class="divide-y divide-slate-100">
-        {% for producto in productos %}
-        <tr class="transition hover:bg-slate-50">
-          <td class="px-6 py-4">
-            <p class="font-semibold text-slate-900">{{ producto.nombre }}</p>
-            {% if producto.descripcion %}
-            <p class="mt-1 max-w-md truncate text-sm text-slate-500">
-              {{ producto.descripcion }}
-            </p>
-            {% endif %}
-          </td>
-          <td class="whitespace-nowrap px-6 py-4 text-slate-700">
-            {{ producto.precio_formateado }}
-          </td>
-          <td class="whitespace-nowrap px-6 py-4 text-slate-700">
-            {{ producto.stock }}
-          </td>
-          <td class="whitespace-nowrap px-6 py-4">
-            {% if producto.activo %}
-            <span class="rounded-full bg-emerald-100 px-2.5 py-1 text-xs font-semibold text-emerald-700">
-              Activo
-            </span>
-            {% else %}
-            <span class="rounded-full bg-slate-200 px-2.5 py-1 text-xs font-semibold text-slate-600">
-              Inactivo
-            </span>
-            {% endif %}
-          </td>
-          <td class="whitespace-nowrap px-6 py-4 text-right text-sm font-semibold">
-            <a class="text-indigo-600 hover:text-indigo-800" href="{% url 'inventario:editar_producto' producto.pk %}">
-              Editar
-            </a>
-            <a class="ml-4 text-rose-600 hover:text-rose-800" href="{% url 'inventario:eliminar_producto' producto.pk %}">
-              Eliminar
-            </a>
-          </td>
-        </tr>
-        {% endfor %}
-      </tbody>
-    </table>
+    <div class="flex items-center gap-3">
+      <a
+        href="{% url 'inventario:crear_producto' %}"
+        class="flex items-center gap-2 rounded-xl bg-gradient-to-r from-indigo-600 to-indigo-500 hover:from-indigo-500 hover:to-indigo-400 px-4 py-2.5 text-sm font-bold text-white shadow-lg shadow-indigo-600/30 transition transform hover:-translate-y-0.5"
+      >
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2.5">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4" />
+        </svg>
+        <span>Agregar Producto</span>
+      </a>
+    </div>
   </div>
-  {% else %}
-  <div class="px-6 py-16 text-center">
-    <p class="text-lg font-semibold text-slate-800">
-      Aún no hay productos registrados.
-    </p>
-    <p class="mt-2 text-slate-500">
-      Crea el primero para comenzar a gestionar tu inventario.
-    </p>
-    <a
-      class="mt-6 inline-flex rounded-lg bg-indigo-600 px-4 py-2 font-semibold text-white transition hover:bg-indigo-700"
-      href="{% url 'inventario:crear_producto' %}"
-    >
-      Crear producto
-    </a>
+
+  <!-- KPI Metric Strip -->
+  <div class="grid grid-cols-2 gap-4 lg:grid-cols-4">
+    <div class="glass-card rounded-2xl p-4">
+      <span class="text-xs font-semibold text-slate-400">Total Artículos</span>
+      <p class="mt-1 text-2xl font-black text-white font-display">{{ total_productos }}</p>
+    </div>
+    <div class="glass-card rounded-2xl p-4">
+      <span class="text-xs font-semibold text-slate-400">Stock Total en Bodega</span>
+      <p class="mt-1 text-2xl font-black text-indigo-400 font-display">{{ total_stock }} <span class="text-xs font-normal text-slate-400">uds</span></p>
+    </div>
+    <div class="glass-card rounded-2xl p-4">
+      <span class="text-xs font-semibold text-slate-400">Stock Crítico (≤ 5)</span>
+      <p class="mt-1 text-2xl font-black font-display {% if productos_criticos > 0 %}text-rose-400{% else %}text-emerald-400{% endif %}">
+        {{ productos_criticos }}
+      </p>
+    </div>
+    <div class="glass-card rounded-2xl p-4">
+      <span class="text-xs font-semibold text-slate-400">Valorización Almacén</span>
+      <p class="mt-1 text-2xl font-black text-cyan-400 font-display font-mono">{{ valor_inventario|clp }}</p>
+    </div>
   </div>
-  {% endif %}
+
+  <!-- Filters & Search Bar -->
+  <div class="glass-card rounded-2xl p-5 space-y-4">
+    <!-- Filter Tabs -->
+    <div class="flex flex-wrap items-center gap-2 border-b border-slate-800 pb-4">
+      <a
+        href="?q={{ consulta }}&filtro=todos"
+        class="rounded-xl px-3.5 py-1.5 text-xs font-bold transition {% if filtro == 'todos' or not filtro %}bg-indigo-600 text-white shadow-md shadow-indigo-600/30{% else %}text-slate-400 hover:bg-slate-800 hover:text-slate-200{% endif %}"
+      >
+        Todos ({{ total_productos }})
+      </a>
+
+      <a
+        href="?q={{ consulta }}&filtro=activos"
+        class="rounded-xl px-3.5 py-1.5 text-xs font-bold transition {% if filtro == 'activos' %}bg-emerald-600 text-white shadow-md shadow-emerald-600/30{% else %}text-slate-400 hover:bg-slate-800 hover:text-emerald-400{% endif %}"
+      >
+        Activos
+      </a>
+
+      <a
+        href="?q={{ consulta }}&filtro=bajo_stock"
+        class="rounded-xl px-3.5 py-1.5 text-xs font-bold transition {% if filtro == 'bajo_stock' %}bg-amber-600 text-white shadow-md shadow-amber-600/30{% else %}text-slate-400 hover:bg-slate-800 hover:text-amber-400{% endif %}"
+      >
+        Bajo Stock (≤ 5)
+      </a>
+
+      <a
+        href="?q={{ consulta }}&filtro=inactivos"
+        class="rounded-xl px-3.5 py-1.5 text-xs font-bold transition {% if filtro == 'inactivos' %}bg-slate-700 text-white shadow-md{% else %}text-slate-400 hover:bg-slate-800 hover:text-slate-200{% endif %}"
+      >
+        Inactivos
+      </a>
+    </div>
+
+    <!-- Search Form -->
+    <form method="get" class="flex flex-col sm:flex-row gap-3">
+      {% if filtro %}
+      <input type="hidden" name="filtro" value="{{ filtro }}" />
+      {% endif %}
+
+      <div class="relative flex-1">
+        <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-slate-500">
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+        </div>
+        <input
+          type="text"
+          name="q"
+          value="{{ consulta }}"
+          placeholder="Buscar por nombre o descripción de producto..."
+          class="form-input pl-10"
+        />
+        {% if consulta %}
+        <a
+          href="?{% if filtro %}filtro={{ filtro }}{% endif %}"
+          class="absolute inset-y-0 right-0 pr-3.5 flex items-center text-slate-500 hover:text-slate-300"
+          title="Limpiar búsqueda"
+        >
+          <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </a>
+        {% endif %}
+      </div>
+
+      <button
+        type="submit"
+        class="rounded-xl bg-slate-800 hover:bg-slate-700 px-5 py-2.5 text-sm font-semibold text-white transition flex items-center justify-center gap-2"
+      >
+        <span>Buscar</span>
+      </button>
+    </form>
+  </div>
+
+  <!-- Products Table -->
+  <div class="glass-card rounded-2xl overflow-hidden shadow-xl">
+    <div class="overflow-x-auto">
+      <table class="min-w-full divide-y divide-slate-800 text-left text-sm">
+        <thead class="bg-slate-900/70 text-xs uppercase tracking-wider text-slate-400">
+          <tr>
+            <th class="px-6 py-4 font-bold">Producto</th>
+            <th class="px-6 py-4 font-bold">Precio Unitario</th>
+            <th class="px-6 py-4 font-bold">Existencias (Stock)</th>
+            <th class="px-6 py-4 font-bold">Estado</th>
+            <th class="px-6 py-4 text-right font-bold">Acciones</th>
+          </tr>
+        </thead>
+        <tbody class="divide-y divide-slate-800/60">
+          {% for producto in productos %}
+          <tr class="hover:bg-slate-800/40 transition">
+            <!-- Nombre y Descripcion -->
+            <td class="px-6 py-4">
+              <p class="font-bold text-slate-100">{{ producto.nombre }}</p>
+              {% if producto.descripcion %}
+              <p class="text-xs text-slate-400 max-w-md line-clamp-1 mt-0.5">
+                {{ producto.descripcion }}
+              </p>
+              {% endif %}
+            </td>
+
+            <!-- Precio -->
+            <td class="px-6 py-4 whitespace-nowrap font-mono font-bold text-white">
+              {{ producto.precio_formateado }}
+            </td>
+
+            <!-- Stock con Barra de Nivel -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              <div class="flex items-center gap-3">
+                <span class="font-bold font-mono {% if producto.stock == 0 %}text-rose-400{% elif producto.stock <= 5 %}text-amber-400{% else %}text-emerald-400{% endif %}">
+                  {{ producto.stock }} uds
+                </span>
+                <div class="h-1.5 w-16 rounded-full bg-slate-800 overflow-hidden">
+                  <div
+                    class="h-full rounded-full {% if producto.stock == 0 %}bg-rose-500{% elif producto.stock <= 5 %}bg-amber-400{% else %}bg-emerald-400{% endif %}"
+                    style="width: {% if producto.stock >= 20 %}100%{% else %}{{ producto.stock }}5%{% endif %};"
+                  ></div>
+                </div>
+              </div>
+            </td>
+
+            <!-- Estado -->
+            <td class="px-6 py-4 whitespace-nowrap">
+              {% if producto.activo %}
+              <span class="badge badge-activo">
+                <span class="h-1.5 w-1.5 rounded-full bg-emerald-400"></span>
+                Activo
+              </span>
+              {% else %}
+              <span class="badge badge-inactivo">
+                <span class="h-1.5 w-1.5 rounded-full bg-slate-400"></span>
+                Inactivo
+              </span>
+              {% endif %}
+            </td>
+
+            <!-- Acciones -->
+            <td class="px-6 py-4 text-right whitespace-nowrap">
+              <div class="flex items-center justify-end gap-2">
+                <a
+                  href="{% url 'inventario:editar_producto' producto.pk %}"
+                  class="rounded-lg bg-slate-800 hover:bg-indigo-600/30 p-2 text-indigo-400 transition"
+                  title="Editar Producto"
+                >
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                  </svg>
+                </a>
+
+                <a
+                  href="{% url 'inventario:eliminar_producto' producto.pk %}"
+                  class="rounded-lg bg-slate-800 hover:bg-rose-500/20 p-2 text-rose-400 transition"
+                  title="Eliminar Producto"
+                >
+                  <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                  </svg>
+                </a>
+              </div>
+            </td>
+          </tr>
+          {% empty %}
+          <tr>
+            <td colspan="5" class="px-6 py-12 text-center text-slate-500">
+              <div class="mx-auto flex h-12 w-12 items-center justify-center rounded-full bg-slate-800 text-slate-400 mb-3">
+                <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4" />
+                </svg>
+              </div>
+              <p class="text-base font-semibold text-slate-300">No se encontraron productos</p>
+              <p class="text-xs text-slate-500 mt-1">Prueba con otro término de búsqueda o agrega un nuevo producto.</p>
+              <a
+                href="{% url 'inventario:crear_producto' %}"
+                class="mt-4 inline-flex items-center gap-2 rounded-xl bg-indigo-600 px-4 py-2 text-xs font-bold text-white shadow hover:bg-indigo-500 transition"
+              >
+                + Crear Producto
+              </a>
+            </td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if productos.has_other_pages %}
+    <div class="flex flex-col sm:flex-row items-center justify-between border-t border-slate-800 px-6 py-4 text-xs text-slate-400 gap-3">
+      <span>Página {{ productos.number }} de {{ productos.paginator.num_pages }}</span>
+      <div class="flex items-center gap-2">
+        {% if productos.has_previous %}
+        <a
+          class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 font-semibold text-slate-200 transition"
+          href="?q={{ consulta }}&filtro={{ filtro }}&page={{ productos.previous_page_number }}"
+        >
+          ← Anterior
+        </a>
+        {% endif %}
+
+        {% if productos.has_next %}
+        <a
+          class="rounded-lg bg-slate-800 hover:bg-slate-700 px-3 py-1.5 font-semibold text-slate-200 transition"
+          href="?q={{ consulta }}&filtro={{ filtro }}&page={{ productos.next_page_number }}"
+        >
+          Siguiente →
+        </a>
+        {% endif %}
+      </div>
+    </div>
+    {% endif %}
+  </div>
 </div>
 {% endblock %}
