@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.core.paginator import Paginator
 from django.db import transaction
 from django.db.models import Q, Sum
+from django.db.models import ProtectedError 
 from django.forms.utils import ErrorList
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
@@ -56,8 +57,11 @@ def eliminar_producto(request, pk):
     producto = get_object_or_404(Producto, pk=pk)
     if request.method == "POST":
         nombre = producto.nombre
-        producto.delete()
-        messages.success(request, f'El producto "{nombre}" fue eliminado correctamente.')
+        try:
+            producto.delete()
+            messages.success(request, f'El producto "{nombre}" fue eliminado correctamente.')
+        except ProtectedError:
+            messages.error(request, f'El producto no se puede eliminar "{nombre}" porque ya tiene ventas asociadas.')
         return redirect("inventario:lista_productos")
 
     return render(request, "inventario/confirmar_eliminacion.html", {"producto": producto})

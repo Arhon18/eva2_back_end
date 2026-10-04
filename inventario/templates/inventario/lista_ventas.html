@@ -1,5 +1,5 @@
 {% extends "inventario/base.html" %} {% block title %}Ventas | Control de
-ventas{% endblock %} {% block content %}
+ventas{% endblock %} {% load humanize %} {% block content %}
 <div
   class="mb-6 flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between"
 >
@@ -78,10 +78,10 @@ ventas{% endblock %} {% block content %}
         </td>
         <td class="px-6 py-4">{{ venta.get_estado_display }}</td>
         <td class="px-6 py-4 text-right font-semibold">
-          ${{ venta.total|floatformat:2 }}
+          ${{ venta.total|floatformat:0|intcomma }}
         </td>
       </tr>
-      {empty}
+      {% empty %}
       <tr>
         <td class="px-6 py-12 text-center text-slate-500" colspan="5">
           No hay ventas para mostrar.
